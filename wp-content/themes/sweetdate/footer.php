@@ -133,5 +133,62 @@
 <?php echo sq_option('analytics'); ?>
 
 <?php wp_footer(); ?>
+
+
+<script type="text/javascript">
+jQuery(document).ready(function() {
+    if (jQuery('body').hasClass('logged-in') && !(jQuery('body').hasClass('my-account'))) {
+
+        jQuery("#profile #item-header-avatar").append("<br><br><button id='vouch' class='small button radius secondary' onclick='myfunc()'>Vouch</button>");
+    }
+    
+});
+
+</script>
+
+
+<script type="text/javascript">
+function myfunc() {
+        //alert('hii');
+        var userName = jQuery('.user-nicename').text();
+        //alert(userName);
+        jQuery.ajax
+        ({ 
+            url: 'http://autismdating.stagingdevsite.com/dev/wp-content/themes/sweetdate-child/ajax/vouch.php',
+            data: {"userName": userName},
+            type: 'post',
+            success: function(result)
+            {
+                //alert(result);
+                var res = result;
+                jQuery("#profile #item-header-avatar").append("<div style='color: black'>"+res+"</div>");
+                jQuery("#vouch").hide();
+            }
+        });
+    }
+
+//jQuery('#vouch').click(function(){
+    //alert('hiii');
+    //var userName = jQuery('.user-nicename').text();
+    //alert(userName);
+    /*jQuery.ajax
+    ({ 
+        url: 'reservebook.php',
+        data: {"userName": userName},
+        type: 'post',
+        success: function(result)
+        {
+            $('.modal-box').text(result).fadeIn(700, function() 
+            {
+                setTimeout(function() 
+                {
+                    $('.modal-box').fadeOut();
+                }, 2000);
+            });
+        }
+    });*/
+//});
+</script>
+
 </body>
 </html>

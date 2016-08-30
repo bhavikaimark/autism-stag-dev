@@ -78,6 +78,15 @@ if ( ! class_exists( 'RTMediaSupport' ) ) {
 			</div>
 			<?php
 		}
+		
+		public function rtmedia_cancel_request() {
+		    do_settings_sections( 'rtmedia-support' );
+		    die();
+		}
+
+		public function rtmedia_mail_content_type() {
+		    return 'text/html';
+		}
 
 		/**
 		 * Render support.
@@ -305,6 +314,12 @@ if ( ! class_exists( 'RTMediaSupport' ) ) {
 		 */
 		public function debug_info_html( $page = '' ) {
 			$this->debug_info();
+			$allowed_html = array(
+				'a' => array(
+					'href' => array(),
+					),
+				'br' => array(),
+				);
 			?>
 			<div id="debug-info" class="rtm-option-wrapper">
 			<h3 class="rtm-option-title"><?php esc_html_e( 'Debug Info', 'buddypress-media' ); ?></h3>
@@ -316,7 +331,7 @@ if ( ! class_exists( 'RTMediaSupport' ) ) {
 						?>
 						<tr>
 						<th scope="row"><?php echo esc_html( $configuration ); ?></th>
-						<td><?php echo esc_html( $value ); ?></td>
+						<td><?php echo wp_kses( $value, $allowed_html ); ?></td>
 						</tr><?php
 					}
 				}
@@ -610,8 +625,9 @@ if ( ! class_exists( 'RTMediaSupport' ) ) {
 			}
 			$message .= '</body>
 				</html>';
-			add_filter( 'wp_mail_content_type', function(){ return 'text/html';
-			} );
+
+			add_filter( 'wp_mail_content_type', array($this,'rtmedia_mail_content_type'));
+
 			$headers       = 'From: ' . $form_data['name'] . ' <' . $form_data['email'] . '>' . "\r\n";
 			$support_email = 'support@rtcamp.com';
 			if ( wp_mail( $support_email, '[rtmedia] ' . $mail_type . ' from ' . str_replace( array(

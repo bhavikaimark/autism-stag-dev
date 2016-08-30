@@ -282,8 +282,11 @@ jQuery( function ( $ ) {
 			}
 		} );
 
-		$( document ).on( "click", ".rtmedia-page-link", function ( e ) {
-			if ( jQuery( '.rtm-media-loading' ).length == 0 ) {
+	$( document ).on( "click", ".rtmedia-page-link", function ( e ) {
+		/* Get current clicked href value */
+		href = $( this ).attr( 'href' );
+
+		if ( jQuery( '.rtm-media-loading' ).length == 0 ) {
 				$( '.rtm-pagination' ).before( "<div class='rtm-media-loading'><img src='" + rMedia_loading_media + "' /></div>" );
 			} else {
 				jQuery( '.rtm-media-loading' ).show();
@@ -303,14 +306,20 @@ jQuery( function ( $ ) {
 					nextpage = parseInt( $( '#rtmedia_last_page' ).val() );
 				} else {
 					nextpage = parseInt( $( '#rtmedia_go_to_num' ).val() );
-				}
+			}
+
+			/* Set page url for input type num pagination */
+			page_base_url = $( this ).data( 'page-base-url' );
+			href = page_base_url + nextpage;
 			}
 
 			if ( $( this ).data( 'page-type' ) == 'num' ) {
 				galleryObj.getNext( nextpage, $( this ).parent().parent().parent().parent().parent(), $( this ).parent().parent() );
 			} else {
 				galleryObj.getNext( nextpage, $( this ).parent().parent().parent().parent().parent(), $( this ).parent().parent() );
-			}
+		}
+		change_rtBrowserAddressUrl( href, '' );
+		
 		} );
 
 		if ( window.location.pathname.indexOf( rtmedia_media_slug ) != - 1 ) {
@@ -1309,7 +1318,7 @@ function rtmedia_selected_file_list( plupload, file, uploader, error ) {
 	if ( error == '' ) {
 		upload_progress = '<div class="plupload_file_progress ui-widget-header" style="width: 0%;">';
 		upload_progress += '</div>';
-		icon = '<span id="label_' + file.id + '" class="dashicons dashicons-edit rtmicon" title="Edit File Name"></span>';
+		icon = '<span id="label_' + file.id + '" class="dashicons dashicons-edit rtmicon" title="' + rtmedia_backbone_strings.rtm_edit_file_name + '"></span>';
 	} else if ( error.code == - 600 ) {
 		err_msg = ( uploader != '' ) ? rtmedia_max_file_msg + uploader.settings.max_file_size :  window.file_size_info;
 		title = "title='" + err_msg + "'";
@@ -1383,4 +1392,12 @@ function rtmedia_selected_file_list( plupload, file, uploader, error ) {
 		} );
 	}
 
+}
+
+/* Change URLin browser without reloading the page */
+function change_rtBrowserAddressUrl( url, page ) {
+	if ( typeof ( history.pushState ) != "undefined" ) {
+		var obj = { Page: page, Url: url };
+		history.pushState( obj, obj.Page, obj.Url );
+	}
 }

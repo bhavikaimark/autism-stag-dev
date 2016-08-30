@@ -1,12 +1,12 @@
 === rtMedia for WordPress, BuddyPress and bbPress ===
-Contributors: rtcamp, rittesh.patel, sanket.parmar, pranalipatel, jignesh.nakrani, mangeshp, sagarjadhav, pushpak.pop, faishal, desaiuditd, rahul286, JoshuaAbenazer, gagan0123, saurabhshukla, nitun.lanjewar, umesh.nevase, suhasgirgaonkar, neerukoul, hrishiv90, kanakiyajay, jarretc, tobiaskluge, rafaelfunchal, UmeshSingla, mehulkaklotar, tannermirabel, kishores
+Contributors: rtcamp, rittesh.patel, sanket.parmar, pranalipatel, jignesh.nakrani, mangeshp, kiranpotphode, sagarjadhav, pushpak.pop, faishal, desaiuditd, rahul286, JoshuaAbenazer, gagan0123, saurabhshukla, nitun.lanjewar, umesh.nevase, suhasgirgaonkar, neerukoul, hrishiv90, kanakiyajay, jarretc, tobiaskluge, rafaelfunchal, UmeshSingla, mehulkaklotar, tannermirabel, kishores
 Donate link: http://rtcamp.com/donate/
 Tags: BuddyPress, media, multimedia, album, audio, songs, music, video, photo, image, upload, share, MediaElement.js, ffmpeg, kaltura, media-node, rtMedia, WordPress, bbPress, masonry
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Requires at least: WordPress 3.6
 Tested up to: 4.5.3
-Stable tag: 4.0.2
+Stable tag: 4.0.6
 
 Add albums, photo, audio/video encoding, privacy, sharing, front-end uploads & more. All this works on mobile/tablets devices.
 
@@ -137,6 +137,28 @@ http://www.youtube.com/watch?v=dJrykKQGDcs
 
 
 == Changelog ==
+
+= 4.0.6 [Aug 01, 2016] =
+* Fix read more media description in media popup
+* Fix warning for pagination links
+* Update products page link on Admin Dashboard widget
+
+= 4.0.5 [Jul 25, 2016] =
+* Fix bulk edit not working on delete and move
+* Fix issue more and less click on media description
+* Fix html markup in support tab
+* Make pagination work on opening page-link in new tab
+* Fix hide rtMedia template files notice after click on dismiss
+* Fix for profile pic not changing on uploading photo
+
+= 4.0.4 [Jul 08, 2016] =
+* Backward compability for PHP 5.2
+
+= 4.0.3 [Jul 05, 2016] =
+* Fix filter_input warning for media in group creation
+* Fix warning for video encoding
+* Fix delete activity for like and comment after media delete
+* Fix media uploading issue from activity for multisite
 
 = 4.0.2 [Jun 27, 2016] =
 * Fixed privacy issue in activity for BuddyPress 2.6.0
@@ -1173,8 +1195,8 @@ http://www.youtube.com/watch?v=dJrykKQGDcs
 
 == Upgrade Notice ==
 
-= 4.0.2 =
-Requires BuddyPress 1.7 or higher, if using BuddyPress. Fixed privacy and permalink issues for BuddyPress activity.
+= 4.0.6 =
+Requires BuddyPress 1.7 or higher, if using BuddyPress. Bug fixes.
 
 == Sponsors ==
 

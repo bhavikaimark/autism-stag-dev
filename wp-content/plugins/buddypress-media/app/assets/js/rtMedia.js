@@ -302,8 +302,9 @@ jQuery( 'document' ).ready( function ( $ ) {
 						} );
 
 						if ( flag ) {
-							var label = $context.charAt( 0 ).toUpperCase() + $context.slice( 1 );
-							var opt_html = '<optgroup value="' + $context + '" label="' + label + ' Albums"><option value="' + response + '">' + $albumname + '</option></optgroup>';
+							var label = $context.charAt( 0 ).toUpperCase() + $context.slice( 1 ) + " " + rtmedia_main_js_strings.rtmedia_albums;
+
+							var opt_html = '<optgroup value="' + $context + '" label="' + label + '"><option value="' + response + '">' + $albumname + '</option></optgroup>';
 
 							jQuery( this ).append( opt_html );
 						}
@@ -376,10 +377,10 @@ jQuery( 'document' ).ready( function ( $ ) {
 			var message = '';
 			var css_class = '';
 			if ( res == "true" ) {
-				message = "Privacy updated successfully.";
+				message = rtmedia_main_js_strings.privacy_update_success;
 				css_class = 'success';
 			} else {
-				message = "Couldn't change privacy, please try again.";
+				message = rtmedia_main_js_strings.privacy_update_error;
 				css_class = 'fail';
 			}
 
@@ -628,7 +629,7 @@ jQuery( 'document' ).ready( function ( $ ) {
 
 					if ( data == '1' ) {
 						//media delete
-						rtmedia_gallery_action_alert_message( 'file deleted successfully.', 'success' );
+						rtmedia_gallery_action_alert_message( rtmedia_main_js_strings.file_delete_success, 'success' );
 						curr_li.remove();
 						if ( typeof rtmedia_masonry_layout != "undefined" && rtmedia_masonry_layout == "true" && jQuery( '.rtmedia-container .rtmedia-list.rtm-no-masonry' ).length == 0 ) {
 							rtm_masonry_reload( rtm_masonry_container );
@@ -688,56 +689,140 @@ function rtm_masonry_reload( el ) {
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-( function ( $ ) {
-	$.fn.shorten = function ( settings ) {
+(function($) {
+ $.fn.shorten = function(settings) {
+     "use strict";
 
-		var config = {
-			showChars: 100,
-			ellipsesText: "...",
-			moreText: "more",
-			lessText: "less"
-		};
+     var config = {
+         showChars: 100,
+         minHideChars: 10,
+         ellipsesText: "...",
+         moreText: "Read more",
+         lessText: "Show less",
+         onLess: function() {},
+         onMore: function() {},
+         errMsg: null,
+         force: false
+     };
 
-		if ( settings ) {
-			$.extend( config, settings );
-		}
+     if (settings) {
+         $.extend(config, settings);
+     }
 
-		$( document ).off( "click", '.morelink' );
+     if ($(this).data('jquery.shorten') && !config.force) {
+         return false;
+     }
+     $(this).data('jquery.shorten', true);
 
-		$( document ).on( { click: function () {
+     $(document).off("click", '.morelink');
 
-			var $this = $( this );
-			if ( $this.hasClass( 'less' ) ) {
-				$this.removeClass( 'less' );
-				$this.html( config.moreText );
-			} else {
-				$this.addClass( 'less' );
-				$this.html( config.lessText );
-			}
-				$this.parent().prev().toggle();
-				$this.prev().toggle();
-				return false;
-		} }, '.morelink' );
+	 $(document).on({
+		 click: function() {
 
-		return this.each( function () {
-			var $this = $( this );
-			if ( $this.hasClass( "shortened" ) ) {
-				return; }
+			 var $this = $(this);
+			 if ($this.hasClass('less')) {
+				 $this.removeClass('less');
+				 $this.html(config.moreText);
+				 $this.parent().prev().hide( 0 , function () { $this.parent().prev().prev().show(); })
+				 .hide( 0, function() {
+					 config.onLess();
+				 });
+			 } else {
+				 $this.addClass('less');
+				 $this.html(config.lessText);
+				 $this.parent().prev().show( 0 , function () { $this.parent().prev().prev().hide(); })
+				 .show( 0 , function() {
+					 config.onMore();
+				 });
+			 }
+			 return false;
+		 }
+		}, '.morelink');
 
-			$this.addClass( "shortened" );
-			var content = $this.html();
-			if ( content.length > config.showChars ) {
-				var c = content.substr( 0, config.showChars );
-				var h = content.substr( config.showChars, content.length - config.showChars );
-				var html = c + '<span class="moreellipses">' + config.ellipsesText + ' </span><span class="morecontent"><span>' + h + '</span> <a href="#" class="morelink">' + config.moreText + '</a></span>';
-				$this.html( html );
-				$( ".morecontent span" ).hide();
-			}
-		} );
+     return this.each(function() {
+         var $this = $(this);
 
-	};
+         var content = $this.html();
+         var contentlen = $this.text().length;
+         if (contentlen > config.showChars + config.minHideChars) {
+             var c = content.substr(0, config.showChars);
+             if (c.indexOf('<') >= 0) // If there's HTML don't want to cut it
+             {
+                 var inTag = false; // I'm in a tag?
+                 var bag = ''; // Put the characters to be shown here
+                 var countChars = 0; // Current bag size
+                 var openTags = []; // Stack for opened tags, so I can close them later
+                 var tagName = null;
 
-} )( jQuery );
+                 for (var i = 0, r = 0; r <= config.showChars; i++) {
+                     if (content[i] == '<' && !inTag) {
+                         inTag = true;
+
+                         // This could be "tag" or "/tag"
+                         tagName = content.substring(i + 1, content.indexOf('>', i));
+
+                         // If its a closing tag
+                         if (tagName[0] == '/') {
+
+
+                             if (tagName != '/' + openTags[0]) {
+                                 config.errMsg = 'ERROR en HTML: the top of the stack should be the tag that closes';
+                             } else {
+                                 openTags.shift(); // Pops the last tag from the open tag stack (the tag is closed in the retult HTML!)
+                             }
+
+                         } else {
+                             // There are some nasty tags that don't have a close tag like <br/>
+                             if (tagName.toLowerCase() != 'br') {
+                                 openTags.unshift(tagName); // Add to start the name of the tag that opens
+                             }
+                         }
+                     }
+                     if (inTag && content[i] == '>') {
+                         inTag = false;
+                     }
+
+                     if (inTag) { bag += content.charAt(i); } // Add tag name chars to the result
+                     else {
+                         r++;
+                         if (countChars <= config.showChars) {
+                             bag += content.charAt(i); // Fix to ie 7 not allowing you to reference string characters using the []
+                             countChars++;
+                         } else // Now I have the characters needed
+                         {
+                             if (openTags.length > 0) // I have unclosed tags
+                             {
+                                 //console.log('They were open tags');
+                                 //console.log(openTags);
+                                 for (j = 0; j < openTags.length; j++) {
+                                     //console.log('Cierro tag ' + openTags[j]);
+                                     bag += '</' + openTags[j] + '>'; // Close all tags that were opened
+
+                                     // You could shift the tag from the stack to check if you end with an empty stack, that means you have closed all open tags
+                                 }
+                                 break;
+                             }
+                         }
+                     }
+                 }
+                 c = $('<div/>').html(bag + '<span class="ellip">' + config.ellipsesText + '</span>').html();
+             }else{
+                 c+=config.ellipsesText;
+             }
+
+             var html = '<div class="shortcontent">' + c +
+                 '</div><div class="allcontent">' + content +
+                 '</div><span><a href="javascript://nop/" class="morelink">' + config.moreText + '</a></span>';
+
+             $this.html(html);
+             $this.find(".allcontent").hide(); // Hide all text
+             $('.shortcontent p:last', $this).css('margin-bottom', 0); //Remove bottom margin on last paragraph as it's likely shortened
+         }
+     });
+
+ };
+
+})(jQuery);
 
 window.onload = function () {
 	if ( typeof rtmedia_masonry_layout != "undefined" && rtmedia_masonry_layout == "true" && jQuery( '.rtmedia-container .rtmedia-list.rtm-no-masonry' ).length == 0 ) {

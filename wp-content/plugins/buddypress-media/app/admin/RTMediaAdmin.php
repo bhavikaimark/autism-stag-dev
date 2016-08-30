@@ -34,10 +34,9 @@ if ( ! class_exists( 'RTMediaAdmin' ) ) {
 
 			$this->rtmedia_support = new RTMediaSupport();
 			add_action( 'wp_ajax_rtmedia_select_request', array( $this->rtmedia_support, 'get_form' ), 1 );
-			add_action( 'wp_ajax_rtmedia_cancel_request', function () {
-				do_settings_sections( 'rtmedia-support' );
-				die();
-			}, 1 );
+
+			add_action( 'wp_ajax_rtmedia_cancel_request', array( $this->rtmedia_support, 'rtmedia_cancel_request' ), 1 );
+
 			add_action( 'wp_ajax_rtmedia_submit_request', array( $this->rtmedia_support, 'submit_request' ), 1 );
 
 			add_action( 'wp_ajax_rtmedia_linkback', array( $this, 'linkback' ), 1 ); //fixme : is it being used ?
@@ -673,7 +672,7 @@ if ( ! class_exists( 'RTMediaAdmin' ) ) {
 						<a href="<?php echo esc_url( admin_url( 'admin.php?page=rtmedia-support#rtmedia-general' ) ); ?>"><?php esc_html_e( 'Free Support', 'buddypress-media' ); ?></a>
 					</li>
 					<li>
-						<a href="https://rtmedia.io/products/category/rtmedia/"><?php esc_html_e( 'Premium Addons', 'buddypress-media' ); ?></a>
+						<a href="https://rtmedia.io/products/category/plugins/"><?php esc_html_e( 'Premium Addons', 'buddypress-media' ); ?></a>
 					</li>
 				</ul>
 			</div>
@@ -764,9 +763,10 @@ if ( ! class_exists( 'RTMediaAdmin' ) ) {
 		 */
 		public function bulk_action_handler() {
 			$action = filter_input( INPUT_GET, 'action', FILTER_SANITIZE_STRING );
-			$request_media = filter_input( INPUT_GET, 'media', FILTER_DEFAULT, FILTER_SANITIZE_NUMBER_INT );
+			$request_media = filter_input( INPUT_GET, 'media', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
+
 			if ( 'bulk_video_regenerate_thumbnails' === $action && '' !== $request_media ) {
-				wp_safe_redirect( esc_url_raw( add_query_arg( array( 'media_ids' => urlencode( implode( ',', $request_media ) ) ), admin_url( 'admin.php?page=rtmedia-regenerate' ) ) ) );
+				wp_safe_redirect( esc_url_raw( add_query_arg( array( 'media_ids' => urlencode( implode( ',', array_map( 'intval', $request_media ) ) ) ), admin_url( 'admin.php?page=rtmedia-regenerate' ) ) ) );
 				exit;
 			}
 		}
@@ -2050,11 +2050,11 @@ if ( ! class_exists( 'RTMediaAdmin' ) ) {
 			if ( ! $site_option || 'hide' !== $site_option ) {
 				rtmedia_update_site_option( 'rtmedia-update-template-notice-v3_9_4', 'show' );
 				if ( is_dir( get_template_directory() . '/rtmedia' ) ) {
-					echo '<div class="error rtmedia-update-template-notice"><p>' . esc_html__( 'Please update rtMedia template files if you have overridden the default rtMedia templates in your theme. If not, you can ignore and hide this notice.', 'buddypress-media' ) . '<a href="#" onclick="rtmedia_hide_template_override_notice()" style="float:right">' . esc_html__( 'Hide', 'buddypress-media' ) . '</a></p></div>';
+					echo '<div class="error rtmedia-update-template-notice"><p>' . esc_html__( 'Please update rtMedia template files if you have overridden the default rtMedia templates in your theme. If not, you can ignore and hide this notice.', 'buddypress-media' ) . '<a href="#" onclick="rtmedia_hide_template_override_notice(\''.esc_js( wp_create_nonce( 'rtmedia_template_notice' ) ).'\')" style="float:right">' . esc_html__( 'Hide', 'buddypress-media' ) . '</a></p></div>';
 					?>
 					<script type="text/javascript">
-						function rtmedia_hide_template_override_notice() {
-							var data = {action: 'rtmedia_hide_template_override_notice', _rtm_nonce: jQuery('#rtmedia-update-template-notice-nonce').val()};
+						function rtmedia_hide_template_override_notice( rtmedia_template_notice_nonce ) {
+							var data = {action: 'rtmedia_hide_template_override_notice', _rtm_nonce: rtmedia_template_notice_nonce };
 							jQuery.post(ajaxurl, data, function (response) {
 								response = response.trim();
 								if ('1' === response)
@@ -2069,7 +2069,7 @@ if ( ! class_exists( 'RTMediaAdmin' ) ) {
 
 		function rtmedia_hide_template_override_notice() {
 
-			if ( check_ajax_referer( '_rtmedia-update-template-notice_', '_rtm_nonce' ) && rtmedia_update_site_option( 'rtmedia-update-template-notice-v3_9_4', 'hide' ) ) {
+			if ( check_ajax_referer( 'rtmedia_template_notice', '_rtm_nonce' ) && rtmedia_update_site_option( 'rtmedia-update-template-notice-v3_9_4', 'hide' ) ) {
 				echo '1';
 			} else {
 				echo '0';
